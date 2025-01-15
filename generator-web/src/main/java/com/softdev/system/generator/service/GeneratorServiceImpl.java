@@ -65,7 +65,14 @@ public class GeneratorServiceImpl implements GeneratorService {
             JSONObject parentTemplateObj = parentTemplates.getJSONObject(i);
             for (int x = 0; x <parentTemplateObj.getJSONArray("templates").size() ; x++) {
                 JSONObject childTemplate = parentTemplateObj.getJSONArray("templates").getJSONObject(x);
-                result.put(childTemplate.getString("name"), FreemarkerUtil.processString(parentTemplateObj.getString("group") + "/" +childTemplate.getString("name")+ ".ftl", params));
+                result.put(childTemplate.getString("name"),
+                        /**
+                         * 这里的getString("group")指的是某个大的技术栈，比如Mybatis、JPA
+                         * 然后childTemplate.getString("name")是在这个技术栈下面的小组件，比如Mapper、Service、Controller
+                         *
+                         * params是给FreeMarker用的Map
+                         */
+                        FreemarkerUtil.processString(parentTemplateObj.getString("group") + "/" +childTemplate.getString("name")+ ".ftl", params));
             }
         }
         return result;

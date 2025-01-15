@@ -33,8 +33,8 @@ public class TableParseUtil {
             throws IOException {
         //process the param
         NonCaseString tableSql = NonCaseString.of(paramInfo.getTableSql());
-        String nameCaseType = MapUtil.getString(paramInfo.getOptions(),"nameCaseType");
-        Boolean isPackageType = MapUtil.getBoolean(paramInfo.getOptions(),"isPackageType");
+        String nameCaseType = MapUtil.getString(paramInfo.getOptions(), "nameCaseType");
+        Boolean isPackageType = MapUtil.getBoolean(paramInfo.getOptions(), "isPackageType");
 
         if (tableSql == null || tableSql.trim().length() == 0) {
             throw new CodeGenerateException("Table structure can not be empty. 表结构不能为空。");
@@ -44,9 +44,12 @@ public class TableParseUtil {
                 .replaceAll("'", "`")
                 .replaceAll("\"", "`")
                 .replaceAll("，", ",")
-                // 这里全部转小写, 会让驼峰风格的字段名丢失驼峰信息(真有驼峰sql字段名的呢(*￣︶￣)); 下文使用工具方法处理包含等
-                // .toLowerCase()
+        // 这里全部转小写, 会让驼峰风格的字段名丢失驼峰信息(真有驼峰sql字段名的呢(*￣︶￣)); 下文使用工具方法处理包含等
+        // .toLowerCase()
         ;
+
+
+        // ===================================第一阶段，开始解析表名===========================================
         //deal with java string copy \n"
         tableSql = tableSql.trim().replaceAll("\\\\n`", "").replaceAll("\\+", "").replaceAll("``", "`").replaceAll("\\\\", "");
         // table Name
@@ -78,8 +81,8 @@ public class TableParseUtil {
         }
         String originTableName = tableName;
         //ignore prefix
-        if(tableName!=null && StringUtils.isNotNull(MapUtil.getString(paramInfo.getOptions(),"ignorePrefix"))){
-            tableName = tableName.replaceAll(MapUtil.getString(paramInfo.getOptions(),"ignorePrefix"),"");
+        if (tableName != null && StringUtils.isNotNull(MapUtil.getString(paramInfo.getOptions(), "ignorePrefix"))) {
+            tableName = tableName.replaceAll(MapUtil.getString(paramInfo.getOptions(), "ignorePrefix"), "");
         }
         // class Name
         String className = StringUtils.upperCaseFirst(StringUtils.underlineToCamelCase(tableName));
@@ -87,6 +90,8 @@ public class TableParseUtil {
             className = className.replaceAll("_", "");
         }
 
+
+        // ===================================第二阶段，开始解析表Comment===========================================
         // class Comment
         String classComment = null;
         //mysql是comment=,pgsql/oracle是comment on table,
@@ -110,6 +115,7 @@ public class TableParseUtil {
         }
         //如果备注跟;混在一起，需要替换掉
         classComment = classComment.replaceAll(";", "");
+
         // field List
         List<FieldInfo> fieldList = new ArrayList<FieldInfo>();
 
@@ -199,12 +205,12 @@ public class TableParseUtil {
                     }
                     columnLine = columnLine.substring(columnLine.indexOf("`") + 1).trim();
                     String mysqlType = columnLine.split("\\s+")[1];
-                    if(mysqlType.contains("(")){
+                    if (mysqlType.contains("(")) {
                         mysqlType = mysqlType.substring(0, mysqlType.indexOf("("));
                     }
                     //swagger class
-                    String swaggerClass = "string" ;
-                    if(mysqlJavaTypeUtil.getMysqlSwaggerTypeMap().containsKey(mysqlType)){
+                    String swaggerClass = "string";
+                    if (mysqlJavaTypeUtil.getMysqlSwaggerTypeMap().containsKey(mysqlType)) {
                         swaggerClass = mysqlJavaTypeUtil.getMysqlSwaggerTypeMap().get(mysqlType);
                     }
                     // field class
@@ -214,7 +220,7 @@ public class TableParseUtil {
                     //2018-11-22 lshz0088 处理字段类型的时候，不严谨columnLine.contains(" int") 类似这种的，可在前后适当加一些空格之类的加以区分，否则当我的字段包含这些字符的时候，产生类型判断问题。
                     //2020-05-03 MOSHOW.K.ZHENG 优化对所有类型的处理
                     //2020-10-20 zhengkai 新增包装类型的转换选择
-                    if(mysqlJavaTypeUtil.getMysqlJavaTypeMap().containsKey(mysqlType)){
+                    if (mysqlJavaTypeUtil.getMysqlJavaTypeMap().containsKey(mysqlType)) {
                         fieldClass = mysqlJavaTypeUtil.getMysqlJavaTypeMap().get(mysqlType);
                     }
                     // field comment，MySQL的一般位于field行，而pgsql和oralce多位于后面。
@@ -269,11 +275,12 @@ public class TableParseUtil {
 
         ClassInfo codeJavaInfo = new ClassInfo();
         codeJavaInfo.setTableName(tableName);
-        codeJavaInfo.setClassName(className);
-        codeJavaInfo.setClassComment(classComment);
-        codeJavaInfo.setFieldList(fieldList);
         codeJavaInfo.setOriginTableName(originTableName);
+        codeJavaInfo.setClassName(className);
 
+        codeJavaInfo.setClassComment(classComment);
+
+        codeJavaInfo.setFieldList(fieldList);
         return codeJavaInfo;
     }
 
@@ -290,8 +297,8 @@ public class TableParseUtil {
                         "buffer_pool",
                         "tablespace"
                 )
-                && !(columnLine.contains("primary ") && columnLine.indexOf("storage") + 3 > columnLine.indexOf("("))
-                && !(columnLine.contains("primary ") && lineSeq > 3)
+                        && !(columnLine.contains("primary ") && columnLine.indexOf("storage") + 3 > columnLine.indexOf("("))
+                        && !(columnLine.contains("primary ") && lineSeq > 3)
         );
     }
 

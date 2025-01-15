@@ -19,6 +19,7 @@ import java.util.Map;
 
 /**
  * 代码生成控制器
+ *
  * @author zhengkai.blog.csdn.net
  */
 @Controller
@@ -32,27 +33,32 @@ public class GeneratorController {
 
     @GetMapping("/")
     public ModelAndView defaultPage() {
-        return new ModelAndView("index").addObject("value",valueUtil);
+        return new ModelAndView("index").addObject("value", valueUtil);
     }
+
     @GetMapping("/index")
     public ModelAndView indexPage() {
-        return new ModelAndView("index").addObject("value",valueUtil);
+        return new ModelAndView("index").addObject("value", valueUtil);
     }
+
     @GetMapping("/main")
     public ModelAndView mainPage() {
-        return new ModelAndView("main").addObject("value",valueUtil);
+        return new ModelAndView("main").addObject("value", valueUtil);
     }
 
     @RequestMapping("/template/all")
     @ResponseBody
     public ReturnT getAllTemplates() throws Exception {
         String templates = generatorService.getTemplateConfig();
-        return ReturnT.ok().put("templates",templates);
+        return ReturnT.ok().put("templates", templates);
     }
+
     @PostMapping("/code/generate")
     @ResponseBody
     public ReturnT generateCode(@RequestBody ParamInfo paramInfo) throws Exception {
-        //log.info(JSON.toJSONString(paramInfo.getOptions()));
+        /**
+         * 用户的入参就是一条SQL
+         */
         if (StringUtils.isEmpty(paramInfo.getTableSql())) {
             return ReturnT.error("表结构信息为空");
         }
@@ -60,9 +66,13 @@ public class GeneratorController {
         //1.Parse Table Structure 表结构解析
         ClassInfo classInfo = null;
         String dataType = MapUtil.getString(paramInfo.getOptions(),"dataType");
+
+        /**
+         * 用户有多种输入方式，create table的SQL，或者JSON，或者insert语句，都是为了解析出这个 ClassInfo 出来
+         */
         if ("sql".equals(dataType)||dataType==null) {
             classInfo = TableParseUtil.processTableIntoClassInfo(paramInfo);
-        }else if ("json".equals(dataType)) {
+        } else if ("json".equals(dataType)) {
             //JSON模式：parse field from json string
             classInfo = TableParseUtil.processJsonToClassInfo(paramInfo);
             //INSERT SQL模式：parse field from insert sql
@@ -85,8 +95,8 @@ public class GeneratorController {
         //3.generate the code by freemarker templates with parameters . Freemarker根据参数和模板生成代码
         Map<String, String> result = generatorService.getResultByParams(paramInfo.getOptions());
 //        log.info("result {}",result);
-        log.info("table:{} - time:{} ", MapUtil.getString(result,"tableName"),new Date());
-        return ReturnT.ok().put("outputJson",result);
+        log.info("table:{} - time:{} ", MapUtil.getString(result, "tableName"), new Date());
+        return ReturnT.ok().put("outputJson", result);
     }
 
 }

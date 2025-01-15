@@ -36,6 +36,7 @@ public class FreemarkerUtil {
 
     /**
      * freemarker config
+     * 这里就已经是FreeMarker的组件了，通过读取SpringBoot下面的resources，建立起来的这个Configuration对象
      */
     private static Configuration freemarkerConfig = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 
@@ -84,6 +85,9 @@ public class FreemarkerUtil {
     public static String processString(String templateName, Map<String, Object> params)
             throws IOException, TemplateException {
 
+        /**
+         * 这下面基本也没逻辑了，就是去看FreeMarker里面的模版语句怎么写的了，params就是个Map，咋传都行
+         */
         Template template = freemarkerConfig.getTemplate(templateName);
         String htmlText = escapeString(processTemplateIntoString(template, params));
         return htmlText;
