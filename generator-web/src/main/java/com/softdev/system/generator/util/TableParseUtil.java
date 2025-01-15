@@ -414,6 +414,8 @@ public class TableParseUtil {
                      * 这里的处理方式也是有待商榷：
                      * 不过大致明白了从用户的输入里一共捞两个核心变量，【类型】和【名字】
                      * JSON传进来的解不出类型来，拿到名字就行
+                     *
+                     * 这里的多级JSON，把每一级的fieldName也存了一遍，平级存放，要不要这么搞可以再想想
                      */
                     jsonObject.getJSONObject(jsonField).keySet().stream().forEach(arrayObject -> {
                         FieldInfo fieldInfo2 = new FieldInfo();
