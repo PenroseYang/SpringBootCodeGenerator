@@ -388,33 +388,44 @@ public class TableParseUtil {
     public static List<FieldInfo> processJsonObjectToFieldList(JSONObject jsonObject) {
         // field List
         List<FieldInfo> fieldList = new ArrayList<FieldInfo>();
-        jsonObject.keySet().stream().forEach(jsonField -> {
-            FieldInfo fieldInfo = new FieldInfo();
-            fieldInfo.setFieldName(jsonField);
-            fieldInfo.setColumnName(jsonField);
-            fieldInfo.setFieldClass(String.class.getSimpleName());
-            fieldInfo.setFieldComment("father:" + jsonField);
-            fieldList.add(fieldInfo);
-            if (jsonObject.get(jsonField) instanceof JSONArray) {
-                jsonObject.getJSONArray(jsonField).stream().forEach(arrayObject -> {
-                    FieldInfo fieldInfo2 = new FieldInfo();
-                    fieldInfo2.setFieldName(arrayObject.toString());
-                    fieldInfo2.setColumnName(arrayObject.toString());
-                    fieldInfo2.setFieldClass(String.class.getSimpleName());
-                    fieldInfo2.setFieldComment("children:" + arrayObject.toString());
-                    fieldList.add(fieldInfo2);
-                });
-            } else if (jsonObject.get(jsonField) instanceof JSONObject) {
-                jsonObject.getJSONObject(jsonField).keySet().stream().forEach(arrayObject -> {
-                    FieldInfo fieldInfo2 = new FieldInfo();
-                    fieldInfo2.setFieldName(arrayObject.toString());
-                    fieldInfo2.setColumnName(arrayObject.toString());
-                    fieldInfo2.setFieldClass(String.class.getSimpleName());
-                    fieldInfo2.setFieldComment("children:" + arrayObject.toString());
-                    fieldList.add(fieldInfo2);
-                });
+        for (String jsonField : jsonObject.keySet()) {
+            {
+                FieldInfo fieldInfo = new FieldInfo();
+                fieldInfo.setFieldName(jsonField);
+                fieldInfo.setColumnName(jsonField);
+
+                // 从JSON里面捞出来的一定是一个String类型
+                fieldInfo.setFieldClass(String.class.getSimpleName());
+                fieldInfo.setFieldComment("father:" + jsonField);
+                fieldList.add(fieldInfo);
+
+
+                if (jsonObject.get(jsonField) instanceof JSONArray) {
+                    jsonObject.getJSONArray(jsonField).stream().forEach(arrayObject -> {
+                        FieldInfo fieldInfo2 = new FieldInfo();
+                        fieldInfo2.setFieldName(arrayObject.toString());
+                        fieldInfo2.setColumnName(arrayObject.toString());
+                        fieldInfo2.setFieldClass(String.class.getSimpleName());
+                        fieldInfo2.setFieldComment("children:" + arrayObject.toString());
+                        fieldList.add(fieldInfo2);
+                    });
+                } else if (jsonObject.get(jsonField) instanceof JSONObject) {
+                    /**
+                     * 这里的处理方式也是有待商榷：
+                     * 不过大致明白了从用户的输入里一共捞两个核心变量，【类型】和【名字】
+                     * JSON传进来的解不出类型来，拿到名字就行
+                     */
+                    jsonObject.getJSONObject(jsonField).keySet().stream().forEach(arrayObject -> {
+                        FieldInfo fieldInfo2 = new FieldInfo();
+                        fieldInfo2.setFieldName(arrayObject.toString());
+                        fieldInfo2.setColumnName(arrayObject.toString());
+                        fieldInfo2.setFieldClass(String.class.getSimpleName());
+                        fieldInfo2.setFieldComment("children:" + arrayObject.toString());
+                        fieldList.add(fieldInfo2);
+                    });
+                }
             }
-        });
+        }
         if (fieldList.size() < 1) {
             throw new CodeGenerateException("JSON解析失败");
         }
